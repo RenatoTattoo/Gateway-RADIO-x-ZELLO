@@ -211,7 +211,7 @@ void setup()
       // Procedimento 5/5 - Coletando valor TELA INICIAL ---------------------------
       display.setTextSize(2);
       display.setCursor(5, 0); 
-      display.print(F("CONFIG 4/4"));
+      display.print(F("CONFIG 5/5"));
       display.setTextSize(1);
       display.setCursor(0, 20);  
       display.println(F("   FECHE o ZELLO"));    
