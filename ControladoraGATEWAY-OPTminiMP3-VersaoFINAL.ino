@@ -4,7 +4,7 @@
 #include <DFRobotDFPlayerMini.h>
 #include <EEPROM.h>
 
-// DEFINICÇÃO DAS PORTAS -----------------------------------------
+// DEFINICÇÃO DAS PORTAS ---------------------------------------
 #define LDRradio         A0
 #define LDRzello         A1
 #define PTTradio         4
@@ -57,7 +57,7 @@ String ESTADO        = "XX";
 unsigned long Timer  = millis();
 unsigned long HeartB = millis();
 
-const byte   HOME     = EEPROM.read (Home);
+const byte   HOME     =(EEPROM.read (Home)) - 10;
 const byte   LHOON    = EEPROM.read (lhoon);
 const byte   ONLINE   = EEPROM.read (online);
 const byte   LONTX    = EEPROM.read (lontx);
@@ -83,29 +83,31 @@ void setup()
    digitalWrite (LED,      LOW);
    
    while(!display.begin(SSD1306_SWITCHCAPVCC, 0x3C))
-   {
-     delay (50);
-     digitalWrite (LED, 0);
-     delay (50);
-     digitalWrite (LED, 1);
-   }
+    {
+      delay (50);
+      digitalWrite (LED, 0);
+      delay (50);
+      digitalWrite (LED, 1);
+    }
    display.display();
    delay(1000);
    display.clearDisplay(); 
 
    while(!ASSISTENTE.begin(ComunicacaoSerial))
-   {
-     delay (500);
-     digitalWrite (LED, 0);
-     delay (500);
-     digitalWrite (LED, 1);
-   }
+    {
+      delay (500);
+      digitalWrite (LED, 0);
+      delay (500);
+      digitalWrite (LED, 1);
+    }
 
    ASSISTENTE.setTimeOut(500);                    // ajustando o timeout da comunicação serial 500ms
    ASSISTENTE.volume(VolumeVOZ);                  // Ajustando o volume (0~30).
    ASSISTENTE.EQ(DFPLAYER_EQ_BASS);               // configurando equalizador = BASS
    ASSISTENTE.outputDevice(DFPLAYER_DEVICE_SD);   // configurando a media usada = SDcard
 
+   // MODO CONFIGURAÇÃO ------------------------------------------------------
+   
    if (digitalRead (LDRradio))
     {
       byte LDRon   = mmLDRz();
@@ -121,10 +123,12 @@ void setup()
       display.setCursor(5, 0); 
       display.print(F("CONFIG 1/5"));
       display.setTextSize(1);
-      display.setCursor(0, 20); 
-      display.println(F("Mantenha o ZELLO em"));
-      display.println(F(" ONLINE (LARANJA) e"));
-      display.println(F("  pressione o PTT"));
+      display.setCursor(6, 22); 
+      display.print(F("Mantenha o ZELLO em"));
+      display.setCursor(14, 35);
+      display.print(F("ONLINE - LARANJA "));
+      display.setCursor(12, 48);
+      display.print(F("e pressione o PTT"));
       display.display();
       display.clearDisplay(); 
       delay (5000);
@@ -144,10 +148,12 @@ void setup()
       display.setCursor(5, 0); 
       display.print(F("CONFIG 2/5"));
       display.setTextSize(1);
-      display.setCursor(0, 20); 
-      display.println(F("Mantenha o ZELLO em"));      
-      display.println(F("  TX (VERMELHO) e"));
-      display.println(F("  pressione o PTT"));
+      display.setCursor(6, 22); 
+      display.print(F("Mantenha o ZELLO em"));
+      display.setCursor(29, 35);   
+      display.print(F("TX VERMELHO"));
+      display.setCursor(12, 48);
+      display.print(F("e pressione o PTT"));
       display.display();
       display.clearDisplay(); 
       delay (2000);
@@ -167,10 +173,12 @@ void setup()
       display.setCursor(5, 0); 
       display.print(F("CONFIG 3/5"));
       display.setTextSize(1);
-      display.setCursor(0, 20); 
-      display.println(F("Mantenha o ZELLO em"));
-      display.println(F("   RX (VERDE) e"));
-      display.println(F("  pressione o PTT"));
+      display.setCursor(6, 22); 
+      display.print(F("Mantenha o ZELLO em"));
+      display.setCursor(33, 35);
+      display.print(F("RX - VERDE"));
+      display.setCursor(12, 48);
+      display.print(F("e pressione o PTT"));
       display.display();
       display.clearDisplay(); 
       delay (2000);
@@ -190,10 +198,12 @@ void setup()
       display.setCursor(5, 0); 
       display.print(F("CONFIG 4/5"));
       display.setTextSize(1);
-      display.setCursor(0, 20); 
-      display.println(F("Mantenha o ZELLO em"));      
-      display.println(F(" OFFLINE (CINZA) e"));
-      display.println(F("  pressione o PTT"));
+      display.setCursor(6, 22); 
+      display.print(F("Mantenha o ZELLO em")); 
+      display.setCursor(17, 35);     
+      display.print(F("OFFLINE - CINZA"));
+      display.setCursor(12, 48);
+      display.print(F("e pressione o PTT"));
       display.display();
       display.clearDisplay(); 
       delay (2000);
@@ -213,10 +223,12 @@ void setup()
       display.setCursor(5, 0); 
       display.print(F("CONFIG 5/5"));
       display.setTextSize(1);
-      display.setCursor(0, 20);  
-      display.println(F("   FECHE o ZELLO"));    
-      display.println(F("para a tela inicial"));
-      display.println(F(" e pressione o PTT"));
+      display.setCursor(23, 22);
+      display.print(F("FECHE o ZELLO")); 
+      display.setCursor(8, 35);   
+      display.print(F("para a tela inicial"));
+      display.setCursor(12, 48);
+      display.print(F("e pressione o PTT"));
       display.display();
       display.clearDisplay(); 
       delay (2000);
@@ -272,12 +284,13 @@ void setup()
       display.clearDisplay(); 
       delay (3000);
 
-      display.setTextSize(1);
-      display.setCursor(0, 0); 
-      display.println(F("        FIM"));
-      display.println(F("      REINICIE"));
-      display.println(F("      O LINK"));
-      display.println(F("     NOVAMENTE"));
+      display.setTextSize(2);
+      display.setCursor(47, 2); 
+      display.print(F("FIM"));
+      display.setCursor(18, 26);
+      display.print(F("REINICIE"));
+      display.setCursor(32, 50);
+      display.print(F("O LINK"));
       display.display();
       display.clearDisplay();
 
@@ -315,7 +328,6 @@ void loop()
         digitalWrite (LED,        LOW);
         LinkOFFLINE = false;
         LinkONLINE  = false;
-//        LeituraOK   = false;
         Timer       = millis();
       }
 
@@ -481,7 +493,7 @@ long mostrador()
    display.print(!digitalRead (MP3ok));
    display.setCursor(0, 27);
    display.print(F("ATIVO: ")); 
-   if ((millis() - HeartB) > 1000)
+   if ((millis() - HeartB) > 500)
      {
        HeartB = millis();
        pisca = !pisca;
