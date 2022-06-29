@@ -136,7 +136,7 @@ void setup()
       Leitura();
       LDRon = mmLDRz();
       display.setTextSize(2);
-      display.setCursor(5, 0); 
+      display.setCursor(0, 35); 
       display.print(F("LIDO: "));
       display.print(LDRon);
       display.display();
@@ -161,7 +161,7 @@ void setup()
       Leitura();
       LDRtx  = mmLDRz();
       display.setTextSize(2);
-      display.setCursor(5, 0); 
+      display.setCursor(0, 35); 
       display.print(F("LIDO: "));
       display.print(LDRtx);
       display.display();
@@ -186,7 +186,7 @@ void setup()
       Leitura();
       LDRrx  = mmLDRz();
       display.setTextSize(2);
-      display.setCursor(5, 0); 
+      display.setCursor(0, 35); 
       display.print(F("LIDO: "));
       display.print(LDRrx);
       display.display();
@@ -211,7 +211,7 @@ void setup()
       Leitura();
       LDRoff = mmLDRz();
       display.setTextSize(2);
-      display.setCursor(5, 0); 
+      display.setCursor(0, 35); 
       display.print(F("LIDO: "));
       display.print(LDRoff);
       display.display();
@@ -236,7 +236,7 @@ void setup()
       Leitura();
       LDRhome = mmLDRz();
       display.setTextSize(2);
-      display.setCursor(5, 0); 
+      display.setCursor(0, 35); 
       display.print(F("LIDO: "));
       display.print(LDRhome);
       display.display();
@@ -469,29 +469,30 @@ long mmLDRz()
 
 long mostrador()
  {
+   byte ValorAtual = mmLDRz();
    if ((MediaLDRzello[0] == MediaLDRzello[10]) & (MediaLDRzello[20] == MediaLDRzello[30]))
     {
-     if ((mmLDRz() < TelaOFF) | (mmLDRz() > LHOON )) ESTADO = "XX";
-     if ((mmLDRz() > TelaOFF) & (mmLDRz() < LRXOFF)) ESTADO = "OF";
-     if ((mmLDRz() > LONTX)   & (mmLDRz() < LHOON )) ESTADO = "ON";
-     if ((mmLDRz() > LRXOFF)  & (mmLDRz() < LTXRX )) ESTADO = "TX";
+     if ((ValorAtual < TelaOFF) | (ValorAtual > LHOON )) ESTADO = "XX";
+     if ((ValorAtual > TelaOFF) & (ValorAtual < LRXOFF)) ESTADO = "OF";
+     if ((ValorAtual > LONTX)   & (ValorAtual < LHOON )) ESTADO = "ON";
+     if ((ValorAtual > LRXOFF)  & (ValorAtual < LTXRX )) ESTADO = "TX";
     }
    if (digitalRead (LDRradio))                       ESTADO = "RX";
    display.setTextColor(SSD1306_WHITE); // preparando tela com informações
    display.setTextSize(4);
-   display.setCursor(74, 3); 
+   display.setCursor(74, 33); 
    display.print(ESTADO);              
    display.setTextSize(1);
-   display.setCursor(0, 0); 
+   display.setCursor(0, 30); 
    display.print(F("ZELLO: "));              
-   display.print(mmLDRz());
-   display.setCursor(0, 9); 
+   display.print(ValorAtual);
+   display.setCursor(0, 39); 
    display.print(F("RADIO: "));              
    display.print(digitalRead (LDRradio));
-   display.setCursor(0, 18); 
+   display.setCursor(0, 48); 
    display.print(F("AUDIO: "));              
    display.print(!digitalRead (MP3ok));
-   display.setCursor(0, 27);
+   display.setCursor(0, 57);
    display.print(F("ATIVO: ")); 
    if ((millis() - HeartB) > 500)
      {
@@ -500,38 +501,38 @@ long mostrador()
      }              
    if (pisca)
      {
-       display.fillRect(42, 27, 11, 7, SSD1306_WHITE);
+       display.fillRect(42, 57, 11, 7, SSD1306_WHITE);
      }
      else
      {
-       display.drawRect(42, 27, 11, 7, SSD1306_WHITE);
+       display.drawRect(42, 57, 11, 7, SSD1306_WHITE);
      }
    
-   const byte CLONLINE   = map (ONLINE,   0, HOME, 0, 128);
-   const byte CLLONTX    = map (LONTX,    0, HOME, 0, 128);
-   const byte CLVTX      = map (VTX,      0, HOME, 0, 128);
-   const byte CLLTXRX    = map (LTXRX,    0, HOME, 0, 128);
-   const byte CLVRX      = map (VRX,      0, HOME, 0, 128);
-   const byte CLLRXOFF   = map (LRXOFF,   0, HOME, 0, 128);
-   const byte CLVOFFLINE = map (VOFFLINE, 0, HOME, 0, 128);
-         byte CLLEITURA  = map (mmLDRz(), 0, HOME, 0, 128);
+   const byte CLONLINE   = map (ONLINE,     0, HOME, 0, 128);
+   const byte CLLONTX    = map (LONTX,      0, HOME, 0, 128);
+   const byte CLVTX      = map (VTX,        0, HOME, 0, 128);
+   const byte CLLTXRX    = map (LTXRX,      0, HOME, 0, 128);
+   const byte CLVRX      = map (VRX,        0, HOME, 0, 128);
+   const byte CLLRXOFF   = map (LRXOFF,     0, HOME, 0, 128);
+   const byte CLVOFFLINE = map (VOFFLINE,   0, HOME, 0, 128);
+         byte CLLEITURA  = map (ValorAtual, 0, HOME, 0, 128);
 
-   display.setCursor (CLONLINE +5,  40); 
+   display.setCursor (CLONLINE +5,  17); 
    display.print     (F("ON"));
-   display.drawLine (CLLONTX+2, 50, CLLONTX+2, 64, SSD1306_WHITE);
-   display.setCursor (CLVTX-8, 40); 
+   display.drawLine (CLLONTX+2, 0, CLLONTX+2, 16, SSD1306_WHITE);
+   display.setCursor (CLVTX-6, 17); 
    display.print     (F("RX"));
-   display.drawLine (CLLTXRX-2, 50, CLLTXRX-2, 64, SSD1306_WHITE); 
-   display.setCursor (CLVRX-10, 40); 
+   display.drawLine (CLLTXRX-2, 0, CLLTXRX-2, 16, SSD1306_WHITE); 
+   display.setCursor (CLVRX-8, 17); 
    display.print     (F("TX"));
-   display.drawLine (CLLRXOFF, 50, CLLRXOFF, 64, SSD1306_WHITE);
-   display.setCursor (CLVOFFLINE-10, 40); 
+   display.drawLine (CLLRXOFF, 0, CLLRXOFF, 16, SSD1306_WHITE);
+   display.setCursor (CLVOFFLINE-10, 17); 
    display.print     (F("OF"));
    
-   display.drawRect(0, 54, 128, 10, SSD1306_WHITE);
-   display.fillTriangle(CLLEITURA    , 54,
-                        CLLEITURA - 4, 64,
-                        CLLEITURA + 4, 64,
+   display.drawRect(0, 0, 128, 10, SSD1306_WHITE);
+   display.fillTriangle(CLLEITURA    ,10,
+                        CLLEITURA - 4, 0,
+                        CLLEITURA + 4, 0,
                             SSD1306_WHITE);
     
    display.display();
@@ -543,12 +544,13 @@ long Leitura()
  {
   for(int x=0; x<127; x+=1)
    {
+    display.setTextColor(SSD1306_WHITE);
     display.setTextSize(2);
-    display.setCursor(0, 10); 
-    display.print(F("Sensor: "));
+    display.setCursor(0, 35); 
+    display.print(F("SENSOR: "));
     display.print(mmLDRz());
-    display.drawRect(0, 45, 127, 10, SSD1306_WHITE);
-    display.fillRect(0, 45,   x, 10, SSD1306_WHITE);
+    display.drawRect(0, 0, 128, 16, SSD1306_WHITE);
+    display.fillRect(0, 0,   x, 16, SSD1306_WHITE);
     display.display();
     display.clearDisplay();
    }
