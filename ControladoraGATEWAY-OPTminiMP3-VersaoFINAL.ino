@@ -4,38 +4,38 @@
 #include <DFRobotDFPlayerMini.h>
 #include <EEPROM.h>
 
-// DEFINICÇÃO DAS PORTAS ---------------------------------------
+// DEFINICÇÃO DAS PORTAS ----------------------------------------------------------------------------------------------
 #define LDRradio         A0
 #define LDRzello         A1
 #define PTTradio         4
-#define PTTzello         2
+#define PTTzello         5
 #define MP3ok            9
 #define LED              13
 
-// DEFINICÃO DOS ENDEREÇOS DA EEPROM ---------------------------
+// DEFINICÃO DOS ENDEREÇOS DA EEPROM ----------------------------------------------------------------------------------
 #define Home             11
 #define lhoon            13
 #define online           15
-#define lontx            17
-#define Vtx              19
-#define ltxrx            21
-#define Vrx              23
-#define lrxoff           25
+#define lonrx            17
+#define Vrx              19
+#define lrxtx            21
+#define Vtx              23
+#define ltxoff           25
 #define Voff             27
 
-// Lista das MENSAGENS -----------------------------------------
-#define rogerbeep        1
+// Lista das MENSAGENS ---------------------------------------------------------------------------------------------------
+#define rogerbeeplocal   1
 #define online           2
 #define offline          3
 #define telapagada       4
 #define problema         5
 #define mensagem1        6
-#define rogerbeep2       7
+#define rogerbeepweb     7
 
 #define INTERVALO        1800000
 
-#define NC               50
-#define VolumeVOZ        20
+#define NC               35
+#define VolumeVOZ        25
 #define TelaOFF          10
 
 SoftwareSerial ComunicacaoSerial(10, 11);  // Pinos 10 RX, 11 TX para comunicação serial com o DFPlayer
@@ -49,22 +49,23 @@ long   mmLDRz();                           // Função média móvel para estabi
 long   mostrador();                        // Função para exibição no display
 long   Leitura();
 
-bool   LinkONLINE    = false;
-bool   LinkOFFLINE   = false;
-bool   ROGERBEEP     = false;
-bool   pisca         = true;
-String ESTADO        = "XX";
-unsigned long Timer  = millis();
-unsigned long HeartB = millis();
+bool   LinkONLINE     = false;
+bool   LinkOFFLINE    = false;
+bool   ROGERBEEPlocal = false;
+bool   ROGERBEEPweb   = false;
+bool   pisca          = true;
+String ESTADO         = "XX";
+unsigned long Timer   = millis();
+unsigned long HeartB  = millis();
 
-const byte   HOME     =(EEPROM.read (Home)) - 10;
+const byte   HOME     = EEPROM.read (Home);
 const byte   LHOON    = EEPROM.read (lhoon);
 const byte   ONLINE   = EEPROM.read (online);
-const byte   LONTX    = EEPROM.read (lontx);
-const byte   VTX      = EEPROM.read (Vtx);
-const byte   LTXRX    = EEPROM.read (ltxrx);
+const byte   LONRX    = EEPROM.read (lonrx);
 const byte   VRX      = EEPROM.read (Vrx);
-const byte   LRXOFF   = EEPROM.read (lrxoff);
+const byte   LRXTX    = EEPROM.read (lrxtx);
+const byte   VTX      = EEPROM.read (Vtx);
+const byte   LTXOFF   = EEPROM.read (ltxoff);
 const byte   VOFFLINE = EEPROM.read (Voff);
 
 void setup()
@@ -106,19 +107,19 @@ void setup()
    ASSISTENTE.EQ(DFPLAYER_EQ_BASS);               // configurando equalizador = BASS
    ASSISTENTE.outputDevice(DFPLAYER_DEVICE_SD);   // configurando a media usada = SDcard
 
-   // MODO CONFIGURAÇÃO ------------------------------------------------------
+   // MODO CONFIGURAÇÃO --------------------------------------------------------------------------------------------------
    
    if (digitalRead (LDRradio))
     {
-      byte LDRon   = mmLDRz();
-      byte LDRtx   = mmLDRz();
-      byte LDRrx   = mmLDRz();
-      byte LDRoff  = mmLDRz();
       byte LDRhome = mmLDRz();
+      byte LDRon   = mmLDRz();
+      byte LDRrx   = mmLDRz();
+      byte LDRtx   = mmLDRz();
+      byte LDRoff  = mmLDRz();
 
       display.setTextColor(SSD1306_WHITE);
       
-      // Procedimento 1/5 - Coletando valor ONLINE ---------------------------
+      // Procedimento 1/5 - Coletando valor ONLINE -----------------------------------------------------------------------
       display.setTextSize(2);
       display.setCursor(5, 0); 
       display.print(F("CONFIG 1/5"));
@@ -143,7 +144,7 @@ void setup()
       display.clearDisplay(); 
       delay (2000);
 
-      // Procedimento 2/5 - Coletando valor TX ----------------------------------------
+      // Procedimento 2/5 - Coletando valor RX ---------------------------------------------------------------------------
       display.setTextSize(2);
       display.setCursor(5, 0); 
       display.print(F("CONFIG 2/5"));
@@ -159,7 +160,7 @@ void setup()
       delay (2000);
       while (!digitalRead(LDRradio)) mmLDRz();
       Leitura();
-      LDRtx  = mmLDRz();
+      LDRrx  = mmLDRz();
       display.setTextSize(2);
       display.setCursor(0, 35); 
       display.print(F("LIDO: "));
@@ -168,7 +169,7 @@ void setup()
       display.clearDisplay(); 
       delay (2000);
 
-      // Procedimento 3/5 - Coletando valor RX --------------------------------------
+      // Procedimento 3/5 - Coletando valor TX ---------------------------------------------------------------------------
       display.setTextSize(2);
       display.setCursor(5, 0); 
       display.print(F("CONFIG 3/5"));
@@ -184,7 +185,7 @@ void setup()
       delay (2000);
       while (!digitalRead(LDRradio)) mmLDRz();
       Leitura();
-      LDRrx  = mmLDRz();
+      LDRtx  = mmLDRz();
       display.setTextSize(2);
       display.setCursor(0, 35); 
       display.print(F("LIDO: "));
@@ -193,7 +194,7 @@ void setup()
       display.clearDisplay(); 
       delay (2000);
 
-      // Procedimento 4/5 - Coletando valor OFFLINE ---------------------------
+      // Procedimento 4/5 - Coletando valor OFFLINE ----------------------------------------------------------------------
       display.setTextSize(2);
       display.setCursor(5, 0); 
       display.print(F("CONFIG 4/5"));
@@ -218,7 +219,7 @@ void setup()
       display.clearDisplay(); 
       delay (2000);
  
-      // Procedimento 5/5 - Coletando valor TELA INICIAL ---------------------------
+      // Procedimento 5/5 - Coletando valor TELA INICIAL -----------------------------------------------------------------
       display.setTextSize(2);
       display.setCursor(5, 0); 
       display.print(F("CONFIG 5/5"));
@@ -245,21 +246,21 @@ void setup()
      
       
       // Calculand os limites com valores coletados
-      byte LimiteHO  = (((LDRhome - LDRon )/2) + LDRon );
-      byte LimiteTX  = (((LDRon   - LDRtx )/2) + LDRtx );
-      byte LimiteRX  = (((LDRtx   - LDRrx )/2) + LDRrx );
-      byte LimiteOFF = (((LDRrx   - LDRoff)/2) + LDRoff);
+      byte LimiteHOON  = (((LDRhome - LDRon )/2) + LDRon );
+      byte LimiteONRX  = (((LDRon   - LDRrx )/2) + LDRrx );
+      byte LimiteRXTX  = (((LDRrx   - LDRtx )/2) + LDRtx );
+      byte LimiteTXOFF = (((LDRtx   - LDRoff)/2) + LDRoff);
       
       // Salvando na EEPROM os todos os dados coletados/calculados
-      EEPROM.write (Home,   LDRhome  );
-      EEPROM.write (lhoon,  LimiteHO );
-      EEPROM.write (online, LDRon    );
-      EEPROM.write (lontx,  LimiteTX );
-      EEPROM.write (Vtx,    LDRtx    );
-      EEPROM.write (ltxrx,  LimiteRX );
-      EEPROM.write (Vrx,    LDRrx    );
-      EEPROM.write (lrxoff, LimiteOFF);
-      EEPROM.write (Voff,   LDRoff   ); 
+      EEPROM.write (Home,   LDRhome    );
+      EEPROM.write (lhoon,  LimiteHOON );
+      EEPROM.write (online, LDRon      );
+      EEPROM.write (lonrx,  LimiteONRX );
+      EEPROM.write (Vrx,    LDRrx      );
+      EEPROM.write (lrxtx,  LimiteRXTX );
+      EEPROM.write (Vtx,    LDRtx      );
+      EEPROM.write (ltxoff, LimiteTXOFF);
+      EEPROM.write (Voff,   LDRoff     ); 
 
       // mostrando valores armazenados na EEPROM
       display.setTextSize(1);
@@ -269,20 +270,21 @@ void setup()
       display.print(F("Von----: "));
       display.println(EEPROM.read (online));
       display.print(F("Lontx--: "));
-      display.println(EEPROM.read (lontx));
+      display.println(EEPROM.read (lonrx));
       display.print(F("Vtx----: "));
-      display.println(EEPROM.read (Vtx));
-      display.print(F("Ltxrx--: "));
-      display.println(EEPROM.read (ltxrx));
-      display.print(F("Vrx----: "));
       display.println(EEPROM.read (Vrx));
+      display.print(F("Ltxrx--: "));
+      display.println(EEPROM.read (lrxtx));
+      display.print(F("Vrx----: "));
+      display.println(EEPROM.read (Vtx));
       display.print(F("Lrxoff-: "));
-      display.println(EEPROM.read (lrxoff));
+      display.println(EEPROM.read (ltxoff));
       display.print(F("Voff---: "));
       display.println(EEPROM.read (Voff));
       display.display();
       display.clearDisplay(); 
-      delay (3000);
+      delay (200);
+      while (!digitalRead(LDRradio)) mmLDRz();
 
       display.setTextSize(2);
       display.setCursor(47, 2); 
@@ -302,9 +304,9 @@ void loop()
   {
 
     mostrador(); 
-    
+    mmLDRz();
 
-    // Prevenção TELA APAGADA ou ZELLO FECHADO ---------------------------------------
+    // Prevenção TELA APAGADA ou ZELLO FECHADO ---------------------------------------------------------------------------
 
     if (((ESTADO == "XX") & (LinkOFFLINE)) | ((ESTADO == "XX") & (LinkONLINE)) | ((ESTADO == "XX") & (digitalRead (LDRradio))))
       {
@@ -331,7 +333,7 @@ void loop()
         Timer       = millis();
       }
 
-   // LINK OFFLINE ----------------------------------------------
+   // LINK OFFLINE ------------------------------------------------------------------------------------------------------
 
     if (((ESTADO == "OF") & (LinkONLINE)) | ((ESTADO == "OF") & (!LinkOFFLINE)) | ((ESTADO == "OF") & (digitalRead (LDRradio))))
       {
@@ -358,7 +360,7 @@ void loop()
       }
       
          
-   // LINK ONLINE ----------------------------------------------
+   // LINK ONLINE --------------------------------------------------------------------------------------------------------
 
    if (((ESTADO == "ON") & (LinkOFFLINE)) | ((ESTADO == "ON") & (!LinkONLINE)))
     {
@@ -380,9 +382,9 @@ void loop()
     }
    
 
-   // Link em RX - RECEBENDO PELO RÁDIO ----------------------------------------------
+   // Link em RX - RECEBENDO PELO RÁDIO -----------------------------------------------------------------------------------
   
-   if ((LinkONLINE) & (digitalRead (LDRradio)))
+   if (digitalRead (LDRradio))
     {
       digitalWrite (PTTzello, HIGH);
       digitalWrite (LED,      HIGH);
@@ -390,37 +392,34 @@ void loop()
        {
          mostrador();
        }
-      delay (200);
       digitalWrite (PTTzello, LOW);
       digitalWrite (LED,      LOW);
-      ROGERBEEP  = true;
-      Timer      = millis();
+      ROGERBEEPlocal = true;
+      Timer          = millis();
     }
 
 
-   // Link em TX - RECEBENDO PELO ZELLO ----------------------------------------------
+   // Link em TX - RECEBENDO PELO ZELLO -----------------------------------------------------------------------------------
   
-   if ( ((LinkONLINE) & (mmLDRz() < LTXRX)))
+   if ( ((LinkONLINE) & (mmLDRz() < LRXTX)))
     {
       digitalWrite (PTTradio, HIGH);
       digitalWrite (LED,      HIGH);
-      while ((mmLDRz() < LTXRX) & (mmLDRz() > LRXOFF))
+      while ((mmLDRz() < LRXTX) & (mmLDRz() > LTXOFF))
        {
          mostrador();
        }
-      digitalWrite (PTTradio, LOW);
-      digitalWrite (LED,      LOW);
-      Timer  = millis();
+      ROGERBEEPweb = true;
+      Timer        = millis();
     }
 
-   // ROGER BEEP ----------------------------------------------
+   // ROGERBEEP LOCAL ------------------------------------------------------------------------------------------------------
 
-   if (ROGERBEEP)
+   if (ROGERBEEPlocal)
     {
-      digitalWrite (PTTradio,   HIGH);
-      digitalWrite (LED,        HIGH);
-      delay (250);
-      ASSISTENTE.play(rogerbeep);
+      digitalWrite (PTTradio, HIGH);
+      digitalWrite (LED,      HIGH);
+      ASSISTENTE.play(rogerbeeplocal);
       delay(250);
       while (!digitalRead (MP3ok))
        {
@@ -428,12 +427,30 @@ void loop()
        }
       digitalWrite (PTTradio,   LOW);
       digitalWrite (LED,        LOW);
-      ROGERBEEP = false;
+      ROGERBEEPlocal = false;
       Timer     = millis();
     }
 
-   // Mensagens periódica ---------------------------------------
+   // ROGERBEEP WEB -------------------------------------------------------------------------------------------------------
+
+   if (ROGERBEEPweb)
+    {
+      ASSISTENTE.play(rogerbeepweb);
+      delay(250);
+      while (!digitalRead (MP3ok))
+       {
+         mostrador();
+       }
+      digitalWrite (PTTradio,   LOW);
+      digitalWrite (LED,        LOW);
+      ROGERBEEPweb = false;
+      Timer        = millis();
+    }
+
+   // Qualquer atividade zera TIMER das Mensagens periódica ---------------------------------------------------------------
    if (ESTADO != "ON") Timer  = millis();
+
+   // Mensagens periódica -------------------------------------------------------------------------------------------------
 
    if ((millis() - Timer) > INTERVALO)
     {
@@ -452,7 +469,7 @@ void loop()
     }
  }
 
-// --------------------------------- FUNÇÃO MEDIA MOVEL ---------------------------------------------
+// --------------------------------- FUNÇÃO MEDIA MOVEL ------------------------------------------------------------------
 
 long mmLDRz()
  {
@@ -465,19 +482,20 @@ long mmLDRz()
    return (contador/NC);
  }
 
-// --------------------------------- FUNÇÃO MOSTRADOR ---------------------------------------------
+// --------------------------------- FUNÇÃO MOSTRADOR --------------------------------------------------------------------
 
 long mostrador()
  {
    byte ValorAtual = mmLDRz();
-   if ((MediaLDRzello[0] == MediaLDRzello[10]) & (MediaLDRzello[20] == MediaLDRzello[30]))
+   if ((MediaLDRzello[0] == MediaLDRzello[15]) & (MediaLDRzello[15] == MediaLDRzello[30]))
     {
      if ((ValorAtual < TelaOFF) | (ValorAtual > LHOON )) ESTADO = "XX";
-     if ((ValorAtual > TelaOFF) & (ValorAtual < LRXOFF)) ESTADO = "OF";
-     if ((ValorAtual > LONTX)   & (ValorAtual < LHOON )) ESTADO = "ON";
-     if ((ValorAtual > LRXOFF)  & (ValorAtual < LTXRX )) ESTADO = "TX";
+     if ((ValorAtual > TelaOFF) & (ValorAtual < LTXOFF)) ESTADO = "OF";
+     if ((ValorAtual > LONRX)   & (ValorAtual < LHOON )) ESTADO = "ON";
+     if ((ValorAtual > LTXOFF)  & (ValorAtual < LRXTX )) ESTADO = "TX";
+     if (digitalRead (LDRradio))                         ESTADO = "RX";
     }
-   if (digitalRead (LDRradio))                       ESTADO = "RX";
+   
    display.setTextColor(SSD1306_WHITE); // preparando tela com informações
    display.setTextSize(4);
    display.setCursor(74, 33); 
@@ -507,27 +525,30 @@ long mostrador()
      {
        display.drawRect(42, 57, 11, 7, SSD1306_WHITE);
      }
-   
-   const byte CLONLINE   = map (ONLINE,     0, HOME, 0, 128);
-   const byte CLLONTX    = map (LONTX,      0, HOME, 0, 128);
-   const byte CLVTX      = map (VTX,        0, HOME, 0, 128);
-   const byte CLLTXRX    = map (LTXRX,      0, HOME, 0, 128);
-   const byte CLVRX      = map (VRX,        0, HOME, 0, 128);
-   const byte CLLRXOFF   = map (LRXOFF,     0, HOME, 0, 128);
-   const byte CLVOFFLINE = map (VOFFLINE,   0, HOME, 0, 128);
-         byte CLLEITURA  = map (ValorAtual, 0, HOME, 0, 128);
 
+   const byte CLONLINE   = map (ONLINE,     0, HOME, 0, 128);
+   const byte CLLONRX    = map (LONRX,      0, HOME, 0, 128);
+   const byte CLLRXTX    = map (LRXTX,      0, HOME, 0, 128);
+   const byte CLLTXOFF   = map (LTXOFF,     0, HOME, 0, 128);
+         byte CLLEITURA  = map (ValorAtual, 0, HOME, 0, 128);
+   
+   const byte CLVRX      = (((CLLONRX - CLLRXTX)  / 2) + CLLRXTX ) - 4;
+   const byte CLVTX      = (((CLLRXTX - CLLTXOFF) / 2) + CLLTXOFF) - 5;
+   const byte CLVOFFLINE = (((CLLTXOFF -      10) / 2) +       11);
+
+   display.drawLine (118, 0, 118, 16, SSD1306_WHITE);
    display.setCursor (CLONLINE +5,  17); 
    display.print     (F("ON"));
-   display.drawLine (CLLONTX+2, 0, CLLONTX+2, 16, SSD1306_WHITE);
-   display.setCursor (CLVTX-6, 17); 
-   display.print     (F("RX"));
-   display.drawLine (CLLTXRX-2, 0, CLLTXRX-2, 16, SSD1306_WHITE); 
-   display.setCursor (CLVRX-8, 17); 
+   display.drawLine (CLLONRX, 0, CLLONRX, 16, SSD1306_WHITE);
+   display.setCursor (CLVTX, 17); 
    display.print     (F("TX"));
-   display.drawLine (CLLRXOFF, 0, CLLRXOFF, 16, SSD1306_WHITE);
-   display.setCursor (CLVOFFLINE-10, 17); 
-   display.print     (F("OF"));
+   display.drawLine (CLLRXTX, 0, CLLRXTX, 16, SSD1306_WHITE); 
+   display.setCursor (CLVRX, 17); 
+   display.print     (F("RX"));
+   display.drawLine (CLLTXOFF, 0, CLLTXOFF, 16, SSD1306_WHITE);
+   display.setCursor (CLVOFFLINE-8, 17); 
+   display.print     (F("OFF"));
+   display.drawLine (10, 0, 10, 16, SSD1306_WHITE);
    
    display.drawRect(0, 0, 128, 10, SSD1306_WHITE);
    display.fillTriangle(CLLEITURA    ,10,
